@@ -3,8 +3,10 @@ import { _Chessidea23 } from './ctrl'
 import Chessreplay23 from 'chessreplay23'
 import { Chessboard23 } from 'chessboard23'
 import { some_replay } from 'solid-play'
-import { color_long, role_long } from 'solid-play'
+import { Color, Role, color_long, role_long } from 'solid-play'
 import { onScrollHandlers, set_$ref } from 'solid-play'
+
+const active = (v: boolean) => v ? 'active': ''
 
 export default function (props: {}) {
 
@@ -24,6 +26,16 @@ export default function (props: {}) {
            </div>
            <div ref={set_$ref(ctrl.ref_board)} class='board-wrap'>
              <Chessboard23 shapes={ctrl.shapes} drag={ctrl.m_drag()} fen={ctrl.fen}/>
+           </div>
+           <div class='free-pieses'>
+             <For each={ctrl.v_free_pieses}>{ ([color, role], i) =>
+               <div onClick={_ => ctrl.i_free_piese = i()} class={[active(i() === ctrl.i_free_piese), 'selectable-piese'].join(' ')}>
+                 <div class={['piese', color_long[color as Color], role_long[role as Role]].join(' ')}></div>
+               </div>
+             }</For>
+             <For each={[...Array(12 - ctrl.v_free_pieses.length).keys()]}>{ _ =>
+                <div class="piese"></div>
+             }</For>
            </div>
          </div>
          <div class='replay-wrap'>

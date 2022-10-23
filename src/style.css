@@ -6,13 +6,13 @@
 
 .editor {
   position: relative;
-  flex: 1;
+  flex: 2;
   display: flex;
   flex-flow: column;
 }
 
 .replay-wrap {
-  flex: 1;
+  flex: 3;
 }
 
 .board-wrap {
@@ -31,4 +31,14 @@
   aspect-ratio: 1/1;
   background-size: cover;
   pointer-events: none;
+}
 
+.free-pieses .selectable-piese {
+  flex: 1 0 0;
+  aspect-ratio: 1/1;
+  background-size: cover;
+}
+
+.free-pieses .selectable-piese.active {
+  background: yellow;
+}
