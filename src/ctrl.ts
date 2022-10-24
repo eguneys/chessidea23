@@ -9,6 +9,7 @@ import { DragEvent, EventPosition } from 'solid-play'
 import { Color, Role, Board } from 'lchessanalysis'
 import { m_log } from 'solid-play'
 
+export type Mode = 'insert' | 'normal'
 
 export class _Chessidea23 {
 
@@ -17,12 +18,30 @@ export class _Chessidea23 {
     this.ref_free.$clear_bounds()
   }
 
+  get replay() {
+    return ['d4 d5']
+  }
+
   get fen() {
     return 'w ' + read(this._board).pieses.join(' ')
   }
 
+  get fen_on_insert() {
+    if (this.mode === 'insert') {
+      return this.fen
+    }
+    return 'w ' + read(this._normal_board).pieses.join(' ')
+  }
+
   get shapes() {
     return [read(this._shapes).shapes, read(this._circles).shapes].join(' ')
+  }
+
+  get shapes_on_insert() {
+    if (this.mode === 'insert') {
+      return this.shapes
+    }
+    return ''
   }
 
   get v_free_pieses() {
@@ -37,6 +56,14 @@ export class _Chessidea23 {
     owrite(this._i_piece_on_board, v)
   }
 
+  set mode(v: Mode) {
+    owrite(this._mode, v)
+  }
+
+  get mode() {
+    return read(this._mode)
+  }
+
   ref_board: Ref
   ref_free: Ref
 
@@ -49,7 +76,17 @@ export class _Chessidea23 {
 
   _i_piece_on_board: Signal<number>
 
+  _mode: Signal<Mode>
+
+  _normal_board: Signal<Board>
+
   constructor() {
+
+    let _normal_board = createSignal(Board.empty)
+    this._normal_board = _normal_board
+
+    let _mode = createSignal('insert' as Mode)
+    this._mode = _mode
 
     let _board = createSignal(Board.empty)
     this._board = _board
@@ -68,7 +105,7 @@ export class _Chessidea23 {
     this._circles = _circles
 
 
-    let _drag_piece: Signal<[string, Vec2] | undefined> = createSignal()
+    let _drag_piece: Signal<[string, Vec2, string | undefined] | undefined> = createSignal()
     this.m_drag = createMemo(() => {
       let _ = read(_drag_piece)
       if (_) {
@@ -84,7 +121,7 @@ export class _Chessidea23 {
                                 .map(role => [color, role] as [Color, Role]))
     this.frees = frees
 
-    const on_drag = (e: DragEvent, e0?: DragEvent) => {
+    const on_drag_insert = (e: DragEvent, e0?: DragEvent) => {
       let e_board_pos = ref_board.get_normal_at_abs_pos(e.e)!.scale(8)
 
       if (e._right && !e0 && !e.m) {
@@ -122,16 +159,16 @@ export class _Chessidea23 {
               piece = frees[_.x].join('')
             }
 
-            owrite(_drag_piece, [piece, _m_board_pos])
+            owrite(_drag_piece, [piece, _m_board_pos, undefined])
           } else {
-            owrite(_drag_piece, _ => _ && [_[0], _m_board_pos])
+            owrite(_drag_piece, _ => _ && [_[0], _m_board_pos, undefined])
           }
         }
       }
     }
 
 
-    const on_up = (e: EventPosition, right: boolean) => {
+    const on_up_insert = (e: EventPosition, right: boolean) => {
       let pos = this.ref_board.get_normal_at_abs_pos(e)!.scale(8).floor
       let piece = read(_drag_piece)?.[0]
 
@@ -154,7 +191,7 @@ export class _Chessidea23 {
       owrite(_drag_piece, undefined)
     }
 
-    const on_click = (e: EventPosition, right: boolean) => {
+    const on_click_insert = (e: EventPosition, right: boolean) => {
       let pos = this.ref_board.get_normal_at_abs_pos(e)!.scale(8).floor
 
       if (right) {
@@ -167,7 +204,78 @@ export class _Chessidea23 {
     }
 
 
-    const on_context = () => {}
+    const on_context_insert = () => {}
+
+
+
+    const on_drag_normal = (e: DragEvent, e0?: DragEvent) => {
+
+      let e_board_pos = ref_board.get_normal_at_abs_pos(e.e)!.scale(8)
+
+      if (e.m) {
+
+          let _m_board_pos = ref_board.get_normal_at_abs_pos(e.m)!.scale(8)
+
+          if (!e0?.m) {
+
+            let _out_pos = vec2_poss(_m_board_pos.floor)
+            let _board_piece = read(this._normal_board).on(_out_pos)
+            if (_board_piece) {
+              owrite(this._normal_board, _ => _.clone.out(_out_pos))
+              owrite(_drag_piece, [_board_piece, _m_board_pos, _out_pos])
+            }
+          } else {
+            owrite(_drag_piece, _ => _ && [_[0], _m_board_pos, _[2]])
+          }
+      }
+
+    }
+    const on_up_normal = (e: EventPosition, right: boolean) => {
+
+      let pos = this.ref_board.get_normal_at_abs_pos(e)!.scale(8).floor
+      let drag_piece = read(_drag_piece)
+      let piece = drag_piece?.[0]
+      let _out_pos = drag_piece?.[2]
+      let _in_pos = vec2_poss(pos)
+
+      if (piece && _out_pos && _in_pos) {
+        let move = [_out_pos, _in_pos].join('')
+      }
+
+
+
+      owrite(_drag_piece, undefined)
+    }
+    const on_click_normal = (e: EventPosition, right: boolean) => {
+    }
+
+
+    const on_drag = (e: DragEvent, e0?: DragEvent) => {
+      if (this.mode === 'insert') {
+        on_drag_insert(e, e0)
+      }
+      if (this.mode === 'normal') {
+        on_drag_normal(e, e0)
+      }
+    }
+    const on_up = (e: EventPosition, right: boolean) => {
+      if (this.mode === 'insert') {
+        on_up_insert(e, right)
+      }
+      if (this.mode === 'normal') {
+        on_up_normal(e, right)
+      }
+    }
+    const on_click = (e: EventPosition, right: boolean) => {
+      if (this.mode === 'insert') {
+        on_click(e, right)
+      }
+      if (this.mode === 'normal') {
+        on_click_normal(e, right)
+      }
+    }
+    const on_context = () => {
+    }
 
     make_drag_from_ref({ on_drag, on_up, on_click, on_context }, this.ref_board)
     make_drag_from_ref({ on_drag, on_up, on_context } , this.ref_free)
@@ -200,7 +308,7 @@ export class _Chessidea23 {
     }))
 
 
-    let m_rules_by_pieses: Memo<Array<string>> = () => {
+    let m_rules_by_pieses: Memo<string> = () => {
       read(_shapes)
       let circles = read(_circles)
       let pieses = read(_board).pieses
@@ -208,8 +316,15 @@ export class _Chessidea23 {
         make_rules(piese, pieses, shapes.arrow_shapes, circles.circle_shapes)).join('\n')
     }
 
-    m_log(m_rules_by_pieses)
+    createEffect(on(() => this.mode, _ => {
+      owrite(_normal_board, read(_board))
+    }))
+
+
   }
+
+
+
 
 }
 

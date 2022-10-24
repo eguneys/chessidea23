@@ -2,7 +2,6 @@ import { For } from 'solid-js'
 import { _Chessidea23 } from './ctrl'
 import Chessreplay23 from 'chessreplay23'
 import { Chessboard23 } from 'chessboard23'
-import { some_replay } from 'solid-play'
 import { Color, Role, color_long, role_long } from 'solid-play'
 import { onScrollHandlers, set_$ref } from 'solid-play'
 
@@ -25,7 +24,7 @@ export default function (props: {}) {
              }</For>
            </div>
            <div ref={set_$ref(ctrl.ref_board)} class='board-wrap'>
-             <Chessboard23 shapes={ctrl.shapes} drag={ctrl.m_drag()} fen={ctrl.fen}/>
+             <Chessboard23 shapes={ctrl.shapes_on_insert} drag={ctrl.m_drag()} fen={ctrl.fen_on_insert}/>
            </div>
            <div class='free-pieses'>
              <For each={ctrl.v_free_pieses}>{ ([color, role], i) =>
@@ -38,8 +37,13 @@ export default function (props: {}) {
              }</For>
            </div>
          </div>
-         <div class='replay-wrap'>
-           <Chessreplay23 moves={some_replay} />
+         <div class='side'>
+           <div class='mode'>
+             <span onClick={_ => ctrl.mode = ctrl.mode === 'insert' ? 'normal' : 'insert' } class={ctrl.mode}>{ctrl.mode}</span>
+           </div>
+           <div class='replay-wrap'>
+             <Chessreplay23 moves={ctrl.replay} />
+           </div>
          </div>
       </div>
       </>)
