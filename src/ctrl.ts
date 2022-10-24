@@ -205,7 +205,7 @@ export class _Chessidea23 {
       let circles = read(_circles)
       let pieses = read(_board).pieses
       return m_shapes_by_pieses().map(([piese, shapes]) =>
-        make_rules(piese, pieses, shapes.arrow_shapes, circles.circle_shapes))
+        make_rules(piese, pieses, shapes.arrow_shapes, circles.circle_shapes)).join('\n')
     }
 
     m_log(m_rules_by_pieses)
