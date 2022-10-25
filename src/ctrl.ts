@@ -1,5 +1,5 @@
 import { Signal } from 'solid-js'
-import { on, createEffect, mapArray, createSignal, createMemo } from 'solid-js'
+import { batch, on, createEffect, mapArray, createSignal, createMemo } from 'solid-js'
 import { colors, roles, initial_fen, dark_poss, light_poss } from 'solid-play'
 import { Ref, make_drag_from_ref } from 'solid-play'
 import { Vec2, vec2_poss } from 'solid-play'
@@ -41,7 +41,7 @@ export class _Chessidea23 {
     if (this.mode === 'insert') {
       return this.shapes
     }
-    return ''
+    return read(this._circles).shapes
   }
 
   get v_free_pieses() {
@@ -219,10 +219,12 @@ export class _Chessidea23 {
           if (!e0?.m) {
 
             let _out_pos = vec2_poss(_m_board_pos.floor)
-            let _board_piece = read(this._normal_board).on(_out_pos)
+            const _board_piece = read(this._normal_board).on(_out_pos)
             if (_board_piece) {
-              owrite(this._normal_board, _ => _.clone.out(_out_pos))
-              owrite(_drag_piece, [_board_piece, _m_board_pos, _out_pos])
+              batch(() => {
+                owrite(_drag_piece, [_board_piece, _m_board_pos, _out_pos])
+                owrite(this._normal_board, _ => _.clone.out(_out_pos))
+              })
             }
           } else {
             owrite(_drag_piece, _ => _ && [_[0], _m_board_pos, _[2]])
@@ -240,6 +242,8 @@ export class _Chessidea23 {
 
       if (piece && _out_pos && _in_pos) {
         let move = [_out_pos, _in_pos].join('')
+        let _ = rule_move(m_rules_pieses_map(), _out_pos, _in_pos) 
+        console.log(_)
       }
 
 
@@ -268,7 +272,7 @@ export class _Chessidea23 {
     }
     const on_click = (e: EventPosition, right: boolean) => {
       if (this.mode === 'insert') {
-        on_click(e, right)
+        on_click_insert(e, right)
       }
       if (this.mode === 'normal') {
         on_click_normal(e, right)
@@ -308,13 +312,18 @@ export class _Chessidea23 {
     }))
 
 
-    let m_rules_by_pieses: Memo<string> = () => {
+    let m_rules_and_pos_by_pieses: Memo<[string, Map<string, string>]> = createMemo(() => {
       read(_shapes)
       let circles = read(_circles)
       let pieses = read(_board).pieses
-      return m_shapes_by_pieses().map(([piese, shapes]) =>
+      let res = m_shapes_by_pieses().map(([piese, shapes]) =>
         make_rules(piese, pieses, shapes.arrow_shapes, circles.circle_shapes)).join('\n')
-    }
+
+      return [res, make_p_map(pieses, circles.circle_shapes)] as [string, Map<string, string>]
+    })
+
+    let m_rules_by_pieses = () => m_rules_and_pos_by_pieses()[0]
+    let m_rules_pieses_map = () => m_rules_and_pos_by_pieses()[1]
 
     createEffect(on(() => this.mode, _ => {
       owrite(_normal_board, read(_board))
@@ -327,6 +336,31 @@ export class _Chessidea23 {
 
 
 }
+
+const rule_move = (m_pos: Map<string, string>, o: string, d: string) => {
+  let _o = m_pos.get(o),
+    _d = m_pos.get(d)
+
+  if (_o && _d) {
+    return [_o, _d].join('-')
+  }
+}
+
+
+const make_p_map = (pieses: Array<string>, circles: string) => {
+
+  let _circles = circles === '' ? [] : circles.split(' ').map(_ => _.split('@')[1])
+  let _ps = pieses.map(_ => _.split('@'))
+
+
+  let _p_map = new Map<string, string>([
+    ..._circles.map((pos, i) => [pos, `f_${i}`] as [string, string]),
+    ..._ps.map(([wn, pos], i) => [pos, `${wn}_${i}`] as [string, string])
+  ])
+
+  return _p_map
+}
+
 
 const make_rules = (piese: string, pieses: Array<string>, arrows: string, circles: string) => {
 
@@ -390,8 +424,11 @@ const make_rules = (piese: string, pieses: Array<string>, arrows: string, circle
     return []
   })
 
-  return [
+  let res = [
     ..._first_rules.map(_ => _.join('->')), 
     ..._second_rules.map(_ => _.join('->')), 
     ..._third_rules.map(_ => _.join('->'))].join(' ')
+
+
+  return res
 }
