@@ -10,8 +10,8 @@ export default defineConfig({
     sourcemap: 'inline',
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'Chessboard23',
-      fileName: 'chessboard23'
+      name: 'Chessidea23',
+      fileName: 'chessidea23'
     },
     rollupOptions: {
       external: ['solid-js', 'solid-play']
