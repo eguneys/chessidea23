@@ -6,10 +6,41 @@ import { Vec2, vec2_poss } from 'solid-play'
 import { Memo, write, read, owrite } from 'solid-play'
 import { Shapes } from 'chessboard23'
 import { DragEvent, EventPosition } from 'solid-play'
-import { Color, Role, Board } from 'lchessanalysis'
+import { MobileSituation, Replay, Color, Role, Board } from 'lchessanalysis'
 import { m_log } from 'solid-play'
 
 export type Mode = 'insert' | 'normal'
+
+
+export type OD = string
+function playMoves(situation: MobileSituation, moves: Array<OD>): MobileSituation | undefined {
+  let move = moves.shift()
+
+  if (move) {
+    let _ = situation.od(move)
+    if (_) {
+      return playMoves(_[0], moves)
+    } else {
+      return undefined
+    }
+  }
+  return situation
+}
+
+const make_replay_fen = (_: string) => {
+  let [fen, moves] = _.split('\n\n')
+  if (moves === '') {
+    return []
+  }
+  let __ = moves.split('\n')
+  return __.map(_ => {
+    let [path, data] = _.split('___')
+    let [,_data] = data.match(/\{(.*)\}/)!
+    let [_uci] = _data.split(' ')
+    return [path, _uci].join(' ')
+  })
+}
+
 
 export class _Chessidea23 {
 
@@ -19,7 +50,7 @@ export class _Chessidea23 {
   }
 
   get replay() {
-    return ['d4 d5']
+    return make_replay_fen(this.m_normal_replay().replay)
   }
 
   get fen() {
@@ -79,11 +110,28 @@ export class _Chessidea23 {
   _mode: Signal<Mode>
 
   _normal_board: Signal<Board>
+  m_normal_replay: Memo<Replay>
 
   constructor() {
 
     let _normal_board = createSignal(Board.empty)
     this._normal_board = _normal_board
+
+    let _normal_moves: Signal<string> = createSignal('')
+
+    let m_normal_replay = createMemo(() => {
+
+      let moves = read(_normal_moves)
+      let fen = read(_normal_board).fen + ' w kqKQ'
+
+      let _ = Replay.from_fen(fen)
+      if (moves !== '') {
+        _.play_ucis(moves)
+      }
+
+      return _
+    })
+    this.m_normal_replay = m_normal_replay
 
     let _mode = createSignal('insert' as Mode)
     this._mode = _mode
@@ -91,6 +139,14 @@ export class _Chessidea23 {
     let _board = createSignal(Board.empty)
     this._board = _board
 
+
+    createEffect(on(() => read(_normal_moves), moves => {
+      let situation = playMoves(MobileSituation.from_fen(read(_board).fen + ' w kqKQ'), moves.split(' '))
+
+      if (situation) {
+        owrite(_normal_board, situation.board)
+      }
+    }))
 
     let ref_board = Ref.make
     let ref_free = Ref.make
@@ -240,16 +296,32 @@ export class _Chessidea23 {
       let _out_pos = drag_piece?.[2]
       let _in_pos = vec2_poss(pos)
 
+      let _piese = [piece, _out_pos].join('@')
+
       if (piece && _out_pos && _in_pos) {
         let move = [_out_pos, _in_pos].join('')
         let _ = rule_move(m_rules_pieses_map(), _out_pos, _in_pos) 
-        console.log(_)
+
+        if (_) {
+          let moves = read(_normal_moves)
+          moves = moves === '' ? move : [moves, move].join(' ')
+
+          let situation = playMoves(MobileSituation.from_fen(read(_board).fen + ' w kqKQ'), 
+                                    moves.split(' '))
+
+          if (situation) {
+            owrite(_normal_moves, moves)
+          } else {
+            owrite(this._normal_board, _ => _.clone.in(_piese))
+          }
+        } else {
+            owrite(this._normal_board, _ => _.clone.in(_piese))
+        }
       }
-
-
 
       owrite(_drag_piece, undefined)
     }
+
     const on_click_normal = (e: EventPosition, right: boolean) => {
     }
 
@@ -344,6 +416,7 @@ const rule_move = (m_pos: Map<string, string>, o: string, d: string) => {
   if (_o && _d) {
     return [_o, _d].join('-')
   }
+  return undefined
 }
 
 
