@@ -9,39 +9,6 @@ import { DragEvent, EventPosition } from 'solid-play'
 import { MobileSituation, Replay, Color, Role, Board } from 'lchessanalysis'
 import { m_log } from 'solid-play'
 
-export type Mode = 'insert' | 'normal'
-
-
-export type OD = string
-function playMoves(situation: MobileSituation, moves: Array<OD>): MobileSituation | undefined {
-  let move = moves.shift()
-
-  if (move) {
-    let _ = situation.od(move)
-    if (_) {
-      return playMoves(_[0], moves)
-    } else {
-      return undefined
-    }
-  }
-  return situation
-}
-
-const make_replay_fen = (_: string) => {
-  let [fen, moves] = _.split('\n\n')
-  if (moves === '') {
-    return []
-  }
-  let __ = moves.split('\n')
-  return __.map(_ => {
-    let [path, data] = _.split('___')
-    let [,_data] = data.match(/\{(.*)\}/)!
-    let [_uci] = _data.split(' ')
-    return [path, _uci].join(' ')
-  })
-}
-
-
 export class _Chessidea23 {
 
   onScroll() {
@@ -49,30 +16,12 @@ export class _Chessidea23 {
     this.ref_free.$clear_bounds()
   }
 
-  get replay() {
-    return make_replay_fen(this.m_normal_replay().replay)
-  }
-
   get fen() {
     return 'w ' + read(this._board).pieses.join(' ')
   }
 
-  get fen_on_insert() {
-    if (this.mode === 'insert') {
-      return this.fen
-    }
-    return 'w ' + read(this._normal_board).pieses.join(' ')
-  }
-
   get shapes() {
     return [read(this._shapes).shapes, read(this._circles).shapes].join(' ')
-  }
-
-  get shapes_on_insert() {
-    if (this.mode === 'insert') {
-      return this.shapes
-    }
-    return read(this._circles).shapes
   }
 
   get v_free_pieses() {
@@ -87,14 +36,6 @@ export class _Chessidea23 {
     owrite(this._i_piece_on_board, v)
   }
 
-  set mode(v: Mode) {
-    owrite(this._mode, v)
-  }
-
-  get mode() {
-    return read(this._mode)
-  }
-
   ref_board: Ref
   ref_free: Ref
 
@@ -107,46 +48,10 @@ export class _Chessidea23 {
 
   _i_piece_on_board: Signal<number>
 
-  _mode: Signal<Mode>
-
-  _normal_board: Signal<Board>
-  m_normal_replay: Memo<Replay>
-
   constructor() {
-
-    let _normal_board = createSignal(Board.empty)
-    this._normal_board = _normal_board
-
-    let _normal_moves: Signal<string> = createSignal('')
-
-    let m_normal_replay = createMemo(() => {
-
-      let moves = read(_normal_moves)
-      let fen = read(_normal_board).fen + ' w kqKQ'
-
-      let _ = Replay.from_fen(fen)
-      if (moves !== '') {
-        _.play_ucis(moves)
-      }
-
-      return _
-    })
-    this.m_normal_replay = m_normal_replay
-
-    let _mode = createSignal('insert' as Mode)
-    this._mode = _mode
 
     let _board = createSignal(Board.empty)
     this._board = _board
-
-
-    createEffect(on(() => read(_normal_moves), moves => {
-      let situation = playMoves(MobileSituation.from_fen(read(_board).fen + ' w kqKQ'), moves.split(' '))
-
-      if (situation) {
-        owrite(_normal_board, situation.board)
-      }
-    }))
 
     let ref_board = Ref.make
     let ref_free = Ref.make
@@ -177,7 +82,7 @@ export class _Chessidea23 {
                                 .map(role => [color, role] as [Color, Role]))
     this.frees = frees
 
-    const on_drag_insert = (e: DragEvent, e0?: DragEvent) => {
+    const on_drag = (e: DragEvent, e0?: DragEvent) => {
       let e_board_pos = ref_board.get_normal_at_abs_pos(e.e)!.scale(8)
 
       if (e._right && !e0 && !e.m) {
@@ -224,7 +129,7 @@ export class _Chessidea23 {
     }
 
 
-    const on_up_insert = (e: EventPosition, right: boolean) => {
+    const on_up = (e: EventPosition, right: boolean) => {
       let pos = this.ref_board.get_normal_at_abs_pos(e)!.scale(8).floor
       let piece = read(_drag_piece)?.[0]
 
@@ -247,7 +152,7 @@ export class _Chessidea23 {
       owrite(_drag_piece, undefined)
     }
 
-    const on_click_insert = (e: EventPosition, right: boolean) => {
+    const on_click = (e: EventPosition, right: boolean) => {
       let pos = this.ref_board.get_normal_at_abs_pos(e)!.scale(8).floor
 
       if (right) {
@@ -260,98 +165,8 @@ export class _Chessidea23 {
     }
 
 
-    const on_context_insert = () => {}
+    const on_context = () => {}
 
-
-
-    const on_drag_normal = (e: DragEvent, e0?: DragEvent) => {
-
-      let e_board_pos = ref_board.get_normal_at_abs_pos(e.e)!.scale(8)
-
-      if (e.m) {
-
-          let _m_board_pos = ref_board.get_normal_at_abs_pos(e.m)!.scale(8)
-
-          if (!e0?.m) {
-
-            let _out_pos = vec2_poss(_m_board_pos.floor)
-            const _board_piece = read(this._normal_board).on(_out_pos)
-            if (_board_piece) {
-              batch(() => {
-                owrite(_drag_piece, [_board_piece, _m_board_pos, _out_pos])
-                owrite(this._normal_board, _ => _.clone.out(_out_pos))
-              })
-            }
-          } else {
-            owrite(_drag_piece, _ => _ && [_[0], _m_board_pos, _[2]])
-          }
-      }
-
-    }
-    const on_up_normal = (e: EventPosition, right: boolean) => {
-
-      let pos = this.ref_board.get_normal_at_abs_pos(e)!.scale(8).floor
-      let drag_piece = read(_drag_piece)
-      let piece = drag_piece?.[0]
-      let _out_pos = drag_piece?.[2]
-      let _in_pos = vec2_poss(pos)
-
-      let _piese = [piece, _out_pos].join('@')
-
-      if (piece && _out_pos && _in_pos) {
-        let move = [_out_pos, _in_pos].join('')
-        let _ = rule_move(m_rules_pieses_map(), _out_pos, _in_pos) 
-
-        if (_) {
-          let moves = read(_normal_moves)
-          moves = moves === '' ? move : [moves, move].join(' ')
-
-          let situation = playMoves(MobileSituation.from_fen(read(_board).fen + ' w kqKQ'), 
-                                    moves.split(' '))
-
-          if (situation) {
-            owrite(_normal_moves, moves)
-          } else {
-            owrite(this._normal_board, _ => _.clone.in(_piese))
-          }
-        } else {
-            owrite(this._normal_board, _ => _.clone.in(_piese))
-        }
-      }
-
-      owrite(_drag_piece, undefined)
-    }
-
-    const on_click_normal = (e: EventPosition, right: boolean) => {
-    }
-
-
-    const on_drag = (e: DragEvent, e0?: DragEvent) => {
-      if (this.mode === 'insert') {
-        on_drag_insert(e, e0)
-      }
-      if (this.mode === 'normal') {
-        on_drag_normal(e, e0)
-      }
-    }
-    const on_up = (e: EventPosition, right: boolean) => {
-      if (this.mode === 'insert') {
-        on_up_insert(e, right)
-      }
-      if (this.mode === 'normal') {
-        on_up_normal(e, right)
-      }
-    }
-    const on_click = (e: EventPosition, right: boolean) => {
-      if (this.mode === 'insert') {
-        on_click_insert(e, right)
-      }
-      if (this.mode === 'normal') {
-        on_click_normal(e, right)
-      }
-    }
-    const on_context = () => {
-    }
 
     make_drag_from_ref({ on_drag, on_up, on_click, on_context }, this.ref_board)
     make_drag_from_ref({ on_drag, on_up, on_context } , this.ref_free)
@@ -396,12 +211,6 @@ export class _Chessidea23 {
 
     let m_rules_by_pieses = () => m_rules_and_pos_by_pieses()[0]
     let m_rules_pieses_map = () => m_rules_and_pos_by_pieses()[1]
-
-    createEffect(on(() => this.mode, _ => {
-      owrite(_normal_board, read(_board))
-    }))
-
-
   }
 
 

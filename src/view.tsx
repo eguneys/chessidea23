@@ -24,7 +24,7 @@ export default function (props: {}) {
              }</For>
            </div>
            <div ref={set_$ref(ctrl.ref_board)} class='board-wrap'>
-             <Chessboard23 shapes={ctrl.shapes_on_insert} drag={ctrl.m_drag()} fen={ctrl.fen_on_insert}/>
+             <Chessboard23 shapes={ctrl.shapes} drag={ctrl.m_drag()} fen={ctrl.fen}/>
            </div>
            <div class='free-pieses'>
              <For each={ctrl.v_free_pieses}>{ ([color, role], i) =>
@@ -39,10 +39,8 @@ export default function (props: {}) {
          </div>
          <div class='side'>
            <div class='mode'>
-             <span onClick={_ => ctrl.mode = ctrl.mode === 'insert' ? 'normal' : 'insert' } class={ctrl.mode}>{ctrl.mode}</span>
            </div>
            <div class='replay-wrap'>
-             <Chessreplay23 moves={ctrl.replay} />
            </div>
          </div>
       </div>
