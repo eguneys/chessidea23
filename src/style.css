@@ -11,10 +11,6 @@
   flex-flow: column;
 }
 
-.side {
-  flex: 3;
-}
-
 .board-wrap {
   position: relative;
   aspect-ratio: 1/1;
@@ -43,21 +39,3 @@
   background: yellow;
 }
 
-
-.mode {
-  height: 2em;
-  display: flex;
-  background: gray;
-}
-
-.mode span {
-  background: green;
-  display: flex;
-  align-items: center;
-  padding: 0.5em;
-}
-
-.mode span.normal {
-  background: orange;
-  color: red;
-}

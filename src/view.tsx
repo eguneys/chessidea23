@@ -9,15 +9,12 @@ const active = (v: boolean) => v ? 'active': ''
 
 export default function (props: {}) {
 
-
   let ctrl = new _Chessidea23()
-
-
-    onScrollHandlers(ctrl)
+  onScrollHandlers(ctrl)
 
   return (<>
       <div class='chessidea23'>
-         <div class='editor'>
+        <div class='editor'>
            <div ref={set_$ref(ctrl.ref_free)} class='free-pieses'>
              <For each={ctrl.frees}>{ ([color, role]) =>
                <div class={['piese', color_long[color], role_long[role]].join(' ')}></div>
@@ -36,13 +33,7 @@ export default function (props: {}) {
                 <div class="piese"></div>
              }</For>
            </div>
-         </div>
-         <div class='side'>
-           <div class='mode'>
-           </div>
-           <div class='replay-wrap'>
-           </div>
-         </div>
-      </div>
-      </>)
+       </div>
+     </div>
+   </>)
 }
