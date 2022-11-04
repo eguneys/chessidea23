@@ -1,5 +1,6 @@
 import './wrap.css'
 import Chessidea23 from './view'
+import Chessideareplay23 from './idea_replay_view'
 
 
 const App = () => {
@@ -7,7 +8,7 @@ const App = () => {
 
   return (<>
     <div class='idea-wrap'>
-      <Chessidea23/>
+      <Chessideareplay23/>
     </div>
       </>)
 }

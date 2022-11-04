@@ -1,4 +1,5 @@
 import './style.css'
+import './idea_replay.css'
 import { render } from 'solid-js/web'
 import App from './main-app'
 

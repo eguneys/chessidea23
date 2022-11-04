@@ -1,6 +1,5 @@
 import { For } from 'solid-js'
 import { _Chessidea23 } from './ctrl'
-import Chessreplay23 from 'chessreplay23'
 import { Chessboard23 } from 'chessboard23'
 import { Color, Role, color_long, role_long } from 'solid-play'
 import { onScrollHandlers, set_$ref } from 'solid-play'
