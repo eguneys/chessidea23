@@ -1,4 +1,4 @@
-import { For } from 'solid-js'
+import { For, createEffect } from 'solid-js'
 import { _Chessidea23 } from './ctrl'
 import { Chessboard23 } from 'chessboard23'
 import { Color, Role, color_long, role_long } from 'solid-play'
@@ -6,10 +6,13 @@ import { onScrollHandlers, set_$ref } from 'solid-play'
 
 const active = (v: boolean) => v ? 'active': ''
 
-export default function (props: {}) {
+export default function (props: { fen: string, on_fen: (_: string) => void }) {
 
   let ctrl = new _Chessidea23()
   onScrollHandlers(ctrl)
+
+  createEffect(() => { ctrl.fen = props.fen })
+  createEffect(() => { props.on_fen(ctrl.fen) })
 
   return (<>
       <div class='chessidea23'>
@@ -20,7 +23,7 @@ export default function (props: {}) {
              }</For>
            </div>
            <div ref={set_$ref(ctrl.ref_board)} class='board-wrap'>
-             <Chessboard23 shapes={ctrl.shapes} drag={ctrl.m_drag()} fen={ctrl.fen}/>
+             <Chessboard23 shapes={ctrl.shapes} drag={ctrl.m_drag()} fen={ctrl.board_fen}/>
            </div>
            <div class='free-pieses'>
              <For each={ctrl.v_free_pieses}>{ ([color, role], i) =>

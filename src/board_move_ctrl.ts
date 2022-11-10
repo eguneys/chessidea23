@@ -89,7 +89,7 @@ export class _Chessboardmove {
         let _m_board_pos = ref_board.get_normal_at_abs_pos(e.m)!.scale(8)
 
         if (!e0?.m) {
-          let orig = vec2_poss(_m_board_pos.floor)
+          let orig = vec2_poss(e_board_pos.floor)
           let _board_piece = m_board().on(orig)
 
           if (_board_piece) {

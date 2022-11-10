@@ -16,7 +16,17 @@ export class _Chessidea23 {
     this.ref_free.$clear_bounds()
   }
 
+  set fen(f: string) {
+    let [fen, circles] = f.split('__fen_circles__')
+    owrite(this._board, Board.from_fen(fen))
+    owrite(this._circles, Shapes.from_fen(circles))
+  }
+
   get fen() {
+    return [read(this._board).fen, read(this._circles).fen].join('__fen_circles__')
+  }
+
+  get board_fen() {
     return 'w ' + read(this._board).pieses.join(' ')
   }
 

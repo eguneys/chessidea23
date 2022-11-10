@@ -1,4 +1,4 @@
-import { Signal, createMemo, createSignal } from 'solid-js'
+import { batch, Signal, createMemo, createSignal } from 'solid-js'
 import { m_log, vec2_poss, Vec2, read, write, owrite, DragEvent, EventPosition, Memo, Ref, make_drag_from_ref, make_wheel_from_ref } from 'solid-play'
 import { Replay, Board, MobileSituation, initial_fen } from 'lchessanalysis'
 
@@ -25,6 +25,34 @@ const make_replay_fen = (moves: string) => {
 
 
 export class _Chessideareplay23 {
+
+
+  get fen() {
+    let replay = read(this._replay)?.replay
+    if (!replay) {
+      return this.board_fen
+    }
+
+    return [this.board_fen, replay].join('__fen_replay__')
+  }
+
+  set fen(_: string) {
+    let [fen, replay] = _.split('__fen_replay__')
+
+
+
+    if (replay)  {
+      batch(() => {
+        owrite(this._replay, Replay.from_fen(replay))
+        owrite(this._initial_fen, fen)
+      })
+    } else {
+      owrite(this._initial_fen, fen)
+    }
+
+
+  }
+
 
   on_click(path: string) {
     owrite(this._path, path)
@@ -58,7 +86,7 @@ export class _Chessideareplay23 {
     return read(this._path)
   }
 
-  get fen() {
+  get board_fen() {
     return this.m_situation().fen
   }
 
@@ -84,6 +112,7 @@ export class _Chessideareplay23 {
   m_situation: Memo<MobileSituation>
   _replay: Signal<Replay | undefined>
   _path: Signal<string | undefined>
+  _initial_fen: Signal<string>
 
   constructor() {
 
@@ -104,8 +133,11 @@ export class _Chessideareplay23 {
       return ''
     })
 
+    let _initial_fen = createSignal(initial_fen)
+    this._initial_fen = _initial_fen
+
     let m_situation = createMemo(() =>
-      playMoves(MobileSituation.from_fen(initial_fen), m_moves().split(' '))
+      playMoves(MobileSituation.from_fen(read(_initial_fen)), m_moves().split(' '))
     )
     this.m_situation = m_situation
 

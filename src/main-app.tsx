@@ -1,14 +1,19 @@
 import './wrap.css'
 import Chessidea23 from './view'
 import Chessideareplay23 from './idea_replay_view'
+import { initial_fen } from 'lchessanalysis'
 
 
 const App = () => {
 
+  let fen = '__fen_circles__'
+ 
+  let replay_fen = `${initial_fen}__fen_replay__`
 
   return (<>
     <div class='idea-wrap'>
-      <Chessideareplay23/>
+      <Chessidea23 fen={fen} on_fen={_=> {console.log(_)}}/>
+      <Chessideareplay23 fen={replay_fen} on_fen={_ => { console.log(_) }}/>
     </div>
       </>)
 }
