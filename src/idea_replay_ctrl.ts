@@ -88,7 +88,7 @@ export class _Chessideareplay23 {
   }
 
   get board_fen() {
-    return this.m_situation().fen
+    return this.m_situation().board.fen
   }
 
   get allowed_ods() {
