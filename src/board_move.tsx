@@ -4,7 +4,7 @@ import { onScrollHandlers, set_$ref } from 'solid-play'
 import { _Chessboardmove } from './board_move_ctrl'
 
 
-export default function (props: { fen: string, on_move: (_: string) => void, allowed_ods: string }) {
+export default function (props: { shapes: string, fen: string, on_move: (_: string) => void, allowed_ods: string }) {
 
   let ctrl = new _Chessboardmove({
     on_move: (_: string) => {
@@ -18,7 +18,7 @@ export default function (props: { fen: string, on_move: (_: string) => void, all
 
   return (<>
       <div ref={set_$ref(ctrl.ref_board)} class='board-wrap'>
-        <Chessboard23 shapes={''} drag={ctrl.drag} fen={ctrl.fen}/>
+        <Chessboard23 shapes={props.shapes} drag={ctrl.drag} fen={ctrl.fen}/>
       </div>
 </>)
 }

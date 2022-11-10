@@ -1,6 +1,7 @@
 import { batch, Signal, createMemo, createSignal } from 'solid-js'
 import { m_log, vec2_poss, Vec2, read, write, owrite, DragEvent, EventPosition, Memo, Ref, make_drag_from_ref, make_wheel_from_ref } from 'solid-play'
 import { Replay, Board, MobileSituation, initial_fen } from 'lchessanalysis'
+import { Shapes } from 'chessboard23'
 
 export type OD = string
 function playMoves(situation: MobileSituation, moves: Array<OD>): MobileSituation {
@@ -90,7 +91,6 @@ export class _Chessideareplay23 {
     return this.m_situation().fen
   }
 
-
   get allowed_ods() {
     return this.m_situation().ods.join(' ')
   }
@@ -115,7 +115,6 @@ export class _Chessideareplay23 {
   _initial_fen: Signal<string>
 
   constructor() {
-
     let board_ref = Ref.make
     this.board_ref = board_ref
 

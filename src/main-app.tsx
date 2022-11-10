@@ -13,7 +13,7 @@ const App = () => {
   return (<>
     <div class='idea-wrap'>
       <Chessidea23 fen={fen} on_fen={_=> {console.log(_)}}/>
-      <Chessideareplay23 fen={replay_fen} on_fen={_ => { console.log(_) }}/>
+      <Chessideareplay23 shapes={''} fen={replay_fen} on_fen={_ => { console.log(_) }}/>
     </div>
       </>)
 }
