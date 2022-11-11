@@ -1,10 +1,9 @@
 import { batch, Signal, createMemo, createSignal } from 'solid-js'
 import { m_log, vec2_poss, Vec2, read, write, owrite, DragEvent, EventPosition, Memo, Ref, make_drag_from_ref, make_wheel_from_ref } from 'solid-play'
-import { Replay, Board, MobileSituation, initial_fen } from 'lchessanalysis'
+import { UCI, spaced_split, heads_path, path_join, Fen, Path, Replay, Board, MobileSituation, initial_fen } from 'lchessanalysis'
 import { Shapes } from 'chessboard23'
 
-export type OD = string
-function playMoves(situation: MobileSituation, moves: Array<OD>): MobileSituation {
+function playMoves(situation: MobileSituation, moves: Array<UCI>): MobileSituation {
   let move = moves.shift()
 
   if (move) {
@@ -13,7 +12,7 @@ function playMoves(situation: MobileSituation, moves: Array<OD>): MobileSituatio
   return situation
 }
 
-const make_replay_fen = (moves: string) => {
+const make_replay_fen = (moves: NodeExport) => {
   let __ = moves.split('\n')
   return __.map(_ => {
     let [path, data] = _.split('_separator_')
@@ -59,7 +58,7 @@ export class _Chessideareplay23 {
     owrite(this._path, path)
   }
 
-  on_move(od: string) {
+  on_move(uci: UCI) {
     let path
     owrite(this._replay, _ => {
       let _path = read(this._path)
@@ -73,7 +72,7 @@ export class _Chessideareplay23 {
         }
         return _
       } else {
-        let res = Replay.from_fen(od)
+        let res = Replay.from_ucis(od)
         path = res.root.path
         return res
       }
@@ -111,38 +110,47 @@ export class _Chessideareplay23 {
 
   m_situation: Memo<MobileSituation>
   _replay: Signal<Replay | undefined>
-  _path: Signal<string | undefined>
-  _initial_fen: Signal<string>
+  _path: Signal<Path | undefined>
+  _initial_fen: Signal<Fen>
 
   constructor() {
     let board_ref = Ref.make
     this.board_ref = board_ref
 
-    let _path: Signal<string | undefined> = createSignal()
+    let _path: Signal<Path | undefined> = createSignal()
     this._path = _path
 
     let _replay: Signal<Replay | undefined> = createSignal(undefined, { equals: false })
     this._replay = _replay
 
-    let m_moves = createMemo(() => {
+    let m_moves: Memo<Array<UCI>> = createMemo(() => {
       let path = read(_path)
       if (path) {
-        return read(_replay)?.follow_path(path).reduce((acc, node) => !acc ? node.uci : [acc, node.uci].join(' '), '') || ''
+        return read(_replay)?.follow_path(path).map(_ => _.uci) || []
       }
-      return ''
+      return []
     })
 
     let _initial_fen = createSignal(initial_fen)
     this._initial_fen = _initial_fen
 
     let m_situation = createMemo(() =>
-      playMoves(MobileSituation.from_fen(read(_initial_fen)), m_moves().split(' '))
+      playMoves(MobileSituation.from_fen(read(_initial_fen)), m_moves())
     )
     this.m_situation = m_situation
 
     const on_wheel = (dir: number) => {
       if (dir < 0) {
-        owrite(_path, _ => !_ || _.length === 2 ? undefined : _.slice(0, -2))
+        owrite(_path, _ => {
+          if (!_) {
+            return undefined
+          }
+          let __ = heads_path(_)
+          if (__ === '') {
+            return undefined
+          }
+          return __
+        })
       } else {
         owrite(_path, _ => {
           let replay = read(_replay)
@@ -152,7 +160,7 @@ export class _Chessideareplay23 {
             }
             let extra =  replay.find_path(_)?.children[0]?.path
             if (extra) {
-              return _ + extra
+              return path_join(_, extra)
             } else {
               return _
             }
