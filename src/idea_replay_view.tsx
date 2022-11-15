@@ -4,9 +4,8 @@ import Chessreplay23 from 'chessreplay23'
 import { onScrollHandlers, set_$ref } from 'solid-play'
 import { _Chessideareplay23 } from './idea_replay_ctrl'
 import Chessboardmove from './board_move'
-import { Fen } from 'lchessanalysis'
 
-export default function (props: { shapes: string, fen: Fen, on_fen: (_: Fen) => void}) {
+export default function (props: { shapes: string, fen: string, on_fen: (_: string) => void}) {
 
   let ctrl = new _Chessideareplay23()
   onScrollHandlers(ctrl)

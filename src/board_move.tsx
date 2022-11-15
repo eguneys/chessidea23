@@ -5,10 +5,10 @@ import { _Chessboardmove } from './board_move_ctrl'
 import { Fen, UCI, S_UCI } from 'lchessanalysis'
 
 
-export default function (props: { shapes: string, fen: Fen, on_move: (_: UCI) => void, allowed_ods: S_UCI }) {
+export default function (props: { shapes: string, fen: string, on_move: (_: UCI) => void, allowed_ods: S_UCI }) {
 
   let ctrl = new _Chessboardmove({
-    on_move: (_: string) => {
+    on_move: (_: UCI) => {
     props.on_move(_)
     }
   })

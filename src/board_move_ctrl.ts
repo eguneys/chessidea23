@@ -1,10 +1,10 @@
 import { Signal, createSignal, createMemo } from 'solid-js'
 import { Memo, read, write, owrite } from 'solid-play'
 import { m_log, Vec2, DragEvent, EventPosition, Ref, make_drag_from_ref, vec2_poss, vec2_orientation } from 'solid-play'
-import { Color, initial_fen, MobileSituation, Board } from 'lchessanalysis'
+import { UCI, BoardFen, Pos, Piese, Color, initial_fen, MobileSituation, Board } from 'lchessanalysis'
 
 export type Hooks = {
-  on_move: (_: string) => void
+  on_move: (_: UCI) => void
 }
 
 export class _Chessboardmove {
@@ -18,7 +18,7 @@ export class _Chessboardmove {
   }
 
   set fen(_: string) {
-    owrite(this._board, Board.from_fen(_))
+    owrite(this._board, Board.from_fen(_ as BoardFen))
   }
 
   get fen() {
@@ -89,7 +89,7 @@ export class _Chessboardmove {
         let _m_board_pos = ref_board.get_normal_at_abs_pos(e.m)!.scale(8)
 
         if (!e0?.m) {
-          let orig = vec2_poss(e_board_pos.floor)
+          let orig = vec2_poss(e_board_pos.floor) as Pos
           let _board_piece = m_board().on(orig)
 
           if (_board_piece) {
@@ -111,18 +111,18 @@ export class _Chessboardmove {
       let piese = read(_drag_piece)?.[0]
 
       if (piese) {
-        let orig = piese.split('@')[1]
+        let orig = piese.split('@')[1] as Pos
         let dest = vec2_poss(vec2_orientation(pos, m_orientation()))
         let piece = piese.split('@')[0]
         if (dest) {
-          let od = orig + dest
+          let od = `${orig}${dest}` as UCI
 
           if (m_allowed_ods().includes(od)) {
             hooks.on_move(od)
             let in_piese = [piece, dest].join('@')
             write(_board, _ => {
-              _.out(orig)
-              .in(in_piese)
+              _.out(orig as Pos)
+              .in(in_piese as Piese)
             })
           }
         }

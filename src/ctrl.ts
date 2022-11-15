@@ -6,7 +6,7 @@ import { Vec2, vec2_poss } from 'solid-play'
 import { Memo, write, read, owrite } from 'solid-play'
 import { Shapes } from 'chessboard23'
 import { DragEvent, EventPosition } from 'solid-play'
-import { MobileSituation, Replay, Color, Role, Board } from 'lchessanalysis'
+import { Piese, Pos, MobileSituation, Replay, Color, Role, Board } from 'lchessanalysis'
 import { m_log } from 'solid-play'
 
 export class _Chessidea23 {
@@ -18,8 +18,8 @@ export class _Chessidea23 {
 
   set fen(f: string) {
     let [fen, circles] = f.split('__fen_circles__')
-    owrite(this._board, Board.from_fen(fen))
-    owrite(this._circles, Shapes.from_fen(circles))
+    owrite(this._board, Board.from_fen(fen as any))
+    owrite(this._circles, Shapes.from_fen(circles as any))
   }
 
   get fen() {
@@ -35,7 +35,7 @@ export class _Chessidea23 {
   }
 
   get v_free_pieses() {
-    return read(this._board).pieses
+    return read(this._board).pieses.map(_ => _.split('@')[0].split(''))
   }
 
   get i_free_piese() {
@@ -122,7 +122,7 @@ export class _Chessidea23 {
           if (!e0?.m) {
             let piece
 
-            let _board_piece = read(this._board).on(vec2_poss(_m_board_pos.floor))
+            let _board_piece = read(this._board).on(vec2_poss(_m_board_pos.floor) as Pos)
             if (_board_piece) {
               piece = _board_piece
             } else {
@@ -154,7 +154,7 @@ export class _Chessidea23 {
           if (_.pieses.length === 12) {
             return _
           }
-          return _.clone.in(piese)
+          return _.clone.in(piese as Piese)
         })
 
         owrite(this._i_piece_on_board, read(this._board).pieses.indexOf(piese))
@@ -170,7 +170,7 @@ export class _Chessidea23 {
 
       } else {
 
-        owrite(this._board, _ => _.clone.out(vec2_poss(pos)))
+        owrite(this._board, _ => _.clone.out(vec2_poss(pos) as Pos))
       }
     }
 
