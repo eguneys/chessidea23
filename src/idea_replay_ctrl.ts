@@ -16,6 +16,9 @@ const replay_convert = (d: FlatDoc) => {
 
 export class _Chessideareplay23 {
 
+  get on_nodes() {
+    return FlatTree.apply(read(this._root))
+  }
 
   get board_fen() {
     return this.m_node().fen

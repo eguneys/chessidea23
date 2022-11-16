@@ -16,7 +16,7 @@ const App = () => {
   return (<>
     <div class='idea-wrap'>
       <Chessidea23 fen={fen} on_fen={_=> {}}/>
-      <Chessideareplay23 shapes={''} nodes={flat_doc} path=''/>
+      <Chessideareplay23 on_nodes={_ => console.log(_) } shapes={''} nodes={flat_doc} path=''/>
     </div>
       </>)
 }
