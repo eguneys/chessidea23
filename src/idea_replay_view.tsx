@@ -4,11 +4,11 @@ import Chessreplay23 from 'chessreplay23'
 import { onScrollHandlers, set_$ref } from 'solid-play'
 import { _Chessideareplay23 } from './idea_replay_ctrl'
 import Chessboardmove from './board_move'
-import { FlatDoc } from 'lchessanalysis'
+import { FlatDoc, Path } from 'lchessanalysis'
 
-export default function (props: { shapes: string, nodes: FlatDoc }) {
+export default function (props: { shapes: string, nodes: FlatDoc, path: Path | '' }) {
 
-  let ctrl = new _Chessideareplay23(props.nodes)
+  let ctrl = new _Chessideareplay23(props.nodes, props.path)
   onScrollHandlers(ctrl)
 
 
