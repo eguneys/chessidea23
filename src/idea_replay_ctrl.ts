@@ -32,6 +32,14 @@ export class _Chessideareplay23 {
     return this.m_replay_moves()
   }
 
+  set nodes(docs: FlatDoc) {
+    owrite(this._root, FlatTree.read(docs))
+  }
+
+  set path(path: Path | '') {
+    owrite(this._path, path)
+  }
+
   on_click(path: string) {
     owrite(this._path, path as Path)
   }

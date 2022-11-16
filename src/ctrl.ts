@@ -9,6 +9,8 @@ import { DragEvent, EventPosition } from 'solid-play'
 import { Piese, Pos, MobileSituation, Color, Role, Board } from 'lchessanalysis'
 import { m_log } from 'solid-play'
 
+export type Rules = [string, Map<string, string>]
+
 export class _Chessidea23 {
 
   onScroll() {
@@ -46,6 +48,10 @@ export class _Chessidea23 {
     owrite(this._i_piece_on_board, v)
   }
 
+  get rules() {
+    return this.m_rules()
+  }
+
   ref_board: Ref
   ref_free: Ref
 
@@ -57,6 +63,8 @@ export class _Chessidea23 {
   m_drag: Memo<string | undefined>
 
   _i_piece_on_board: Signal<number>
+
+  m_rules: Memo<Rules>
 
   constructor() {
 
@@ -221,6 +229,9 @@ export class _Chessidea23 {
 
     let m_rules_by_pieses = () => m_rules_and_pos_by_pieses()[0]
     let m_rules_pieses_map = () => m_rules_and_pos_by_pieses()[1]
+
+
+    this.m_rules = m_rules_and_pos_by_pieses
   }
 
 

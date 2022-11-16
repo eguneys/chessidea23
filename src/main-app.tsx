@@ -8,14 +8,12 @@ const App = () => {
 
   let fen = '__fen_circles__'
  
-  let replay_fen = `${initial_fen}__fen_replay__`
-
   let root = TreeBuilder.apply(MobileSituation.from_fen(initial_fen), ['e2e4', 'd7d5'])
   let flat_doc = FlatTree.apply(root)
 
   return (<>
     <div class='idea-wrap'>
-      <Chessidea23 fen={fen} on_fen={_=> {}}/>
+      <Chessidea23 fen={fen} on_fen={_=> {}} on_rules = { _ => {}}/>
       <Chessideareplay23 on_nodes={_ => console.log(_) } shapes={''} nodes={flat_doc} path=''/>
     </div>
       </>)

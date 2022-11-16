@@ -1,4 +1,4 @@
-import { createEffect, Show } from 'solid-js'
+import { batch, createEffect, Show } from 'solid-js'
 import { Chessboard23 } from 'chessboard23'
 import Chessreplay23 from 'chessreplay23'
 import { onScrollHandlers, set_$ref } from 'solid-play'
@@ -11,6 +11,12 @@ export default function (props: { shapes: string, on_nodes: (_: FlatDoc) => void
   let ctrl = new _Chessideareplay23(props.nodes, props.path)
   onScrollHandlers(ctrl)
 
+  createEffect(() => {
+      batch(() => {
+          ctrl.nodes = props.nodes
+          ctrl.path = props.path
+          })
+      })
   createEffect(() => props.on_nodes(ctrl.on_nodes))
 
   return (<>
