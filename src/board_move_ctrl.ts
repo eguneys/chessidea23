@@ -9,7 +9,7 @@ export type Hooks = {
 
 export class _Chessboardmove {
 
-  set allowed_ods(_: string) {
+  set allowed_ods(_: Array<UCI>) {
     owrite(this._allowed_ods, _)
   }
 
@@ -51,7 +51,7 @@ export class _Chessboardmove {
   m_drag_piese: Memo<string| undefined>
 
   _board: Signal<Board>
-  _allowed_ods: Signal<string>
+  _allowed_ods: Signal<Array<UCI>>
 
   constructor(hooks: Hooks) {
     let ref_board = Ref.make
@@ -66,9 +66,9 @@ export class _Chessboardmove {
     this._board = _board
     this.m_board = m_board
 
-    let _allowed_ods: Signal<string> = createSignal('')
+    let _allowed_ods: Signal<Array<UCI>> = createSignal([])
     this._allowed_ods = _allowed_ods
-    let m_allowed_ods: Memo<Array<string>> = createMemo(() => read(_allowed_ods).split(' '))
+    let m_allowed_ods: Memo<Array<UCI>> = createMemo(() => read(_allowed_ods))
 
     let _drag_piece: Signal<[string, Vec2] | undefined> = createSignal(undefined, { equals: false })
     this.m_drag = createMemo(() => {

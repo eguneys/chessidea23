@@ -6,7 +6,7 @@ import { Vec2, vec2_poss } from 'solid-play'
 import { Memo, write, read, owrite } from 'solid-play'
 import { Shapes } from 'chessboard23'
 import { DragEvent, EventPosition } from 'solid-play'
-import { Piese, Pos, MobileSituation, Replay, Color, Role, Board } from 'lchessanalysis'
+import { Piese, Pos, MobileSituation, Color, Role, Board } from 'lchessanalysis'
 import { m_log } from 'solid-play'
 
 export class _Chessidea23 {
