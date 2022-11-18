@@ -1,5 +1,5 @@
 import { Signal } from 'solid-js'
-import { batch, on, createEffect, mapArray, createSignal, createMemo } from 'solid-js'
+import { untrack, batch, on, createEffect, mapArray, createSignal, createMemo } from 'solid-js'
 import { colors, roles, initial_fen, dark_poss, light_poss } from 'solid-play'
 import { Ref, make_drag_from_ref } from 'solid-play'
 import { Vec2, vec2_poss } from 'solid-play'
@@ -23,16 +23,19 @@ export class _Chessidea23 {
     owrite(this._board, Board.from_fen(fen as any))
     owrite(this._circles, Shapes.from_fen(circles.trim() as any))
 
-    let m_shapes_by_pieses = this.m_shapes_by_pieses()
+    let m_shapes_by_pieses = untrack(() => this.m_shapes_by_pieses())
 
-    _shapes_fen.split('__shapes_by_pieses__').forEach(_ => {
-      let [piese, shapes] = _.split('__piese_shapes__')
 
-      let __ = m_shapes_by_pieses.find(_ => _[0] === piese)!
-      __[1] = Shapes.from_fen(shapes.trim())
-    })
+    if (_shapes_fen !== '') {
+      _shapes_fen.split('__shapes_by_pieses__').forEach(_ => {
+        let [piese, shapes] = _.split('__piese_shapes__')
 
-    owrite(this._i_piece_on_board, parseInt(_i_piece))
+        let __ = m_shapes_by_pieses.find(_ => _[0] === piese)!
+        __[1] = Shapes.from_fen(shapes.trim())
+      })
+      owrite(this._i_piece_on_board, parseInt(_i_piece))
+    }
+
   }
 
   get fen() {
