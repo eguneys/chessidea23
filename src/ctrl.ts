@@ -118,8 +118,10 @@ export class _Chessidea23 {
           let _pos2 = vec2_poss(_m_board_pos.floor)
           if (_pos && _pos2 && _pos !== _pos2) {
             write(_shapes, _ => _.drawing_arrow('green', _pos, _pos2))
+            /*
             write(_circles, _ => _.drawing_cancel())
-
+           */
+            read(_circles).drawing_cancel()
           }
         }
       } else {
@@ -216,9 +218,10 @@ export class _Chessidea23 {
       }
     }))
 
+    let m_shapes_fen = createMemo(() => read(_shapes).fen)
 
     let m_rules_and_pos_by_pieses: Memo<[string, Map<string, string>]> = createMemo(() => {
-      read(_shapes)
+      m_shapes_fen()
       let circles = read(_circles)
       let pieses = read(_board).pieses
       let res = m_shapes_by_pieses().map(([piese, shapes]) =>
