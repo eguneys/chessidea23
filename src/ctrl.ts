@@ -19,13 +19,28 @@ export class _Chessidea23 {
   }
 
   set fen(f: string) {
-    let [fen, circles] = f.split('__fen_circles__')
+    let [fen, circles, _shapes_fen, _i_piece] = f.split('__fen_circles__')
     owrite(this._board, Board.from_fen(fen as any))
-    owrite(this._circles, Shapes.from_fen(circles as any))
+    owrite(this._circles, Shapes.from_fen(circles.trim() as any))
+
+    let m_shapes_by_pieses = this.m_shapes_by_pieses()
+
+    _shapes_fen.split('__shapes_by_pieses__').forEach(_ => {
+      let [piese, shapes] = _.split('__piese_shapes__')
+
+      let __ = m_shapes_by_pieses.find(_ => _[0] === piese)!
+      __[1] = Shapes.from_fen(shapes.trim())
+    })
+
+    owrite(this._i_piece_on_board, parseInt(_i_piece))
   }
 
   get fen() {
-    return [read(this._board).fen, read(this._circles).fen].join('__fen_circles__')
+    let _shapes_fen = this.m_shapes_by_pieses().map(([piese, shapes]) =>
+      [piese, shapes.fen].join('__piese_shapes__')
+    ).join('__shapes_by_pieses__')
+    let _i_piece = read(this._i_piece_on_board)
+    return [read(this._board).fen, read(this._circles).fen, _shapes_fen, _i_piece].join('__fen_circles__')
   }
 
   get board_fen() {
@@ -63,6 +78,7 @@ export class _Chessidea23 {
   m_drag: Memo<string | undefined>
 
   _i_piece_on_board: Signal<number>
+  m_shapes_by_pieses: Memo<Array<[string, Shapes]>>
 
   m_rules: Memo<Rules>
 
@@ -154,8 +170,10 @@ export class _Chessidea23 {
       let piece = read(_drag_piece)?.[0]
 
       if (right) {
-        write(this._circles, _ => _.commit_drawing())
-        write(this._shapes, _ => _.commit_drawing())
+        batch(() => {
+          write(this._circles, _ => _.commit_drawing())
+          write(this._shapes, _ => _.commit_drawing())
+        })
       }
 
       if (piece) {
@@ -210,6 +228,7 @@ export class _Chessidea23 {
       let _piece_on_board = m_piece_on_board()
       return m_shapes_by_pieses().find(_ => _[0] === _piece_on_board)
     })
+    this.m_shapes_by_pieses = m_shapes_by_pieses
 
 
     createEffect(on(m_current_shapes, m => {
