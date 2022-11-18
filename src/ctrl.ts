@@ -222,14 +222,13 @@ export class _Chessidea23 {
       let circles = read(_circles)
       let pieses = read(_board).pieses
       let res = m_shapes_by_pieses().map(([piese, shapes]) =>
-        make_rules(piese, pieses, shapes.arrow_shapes, circles.circle_shapes)).join('\n')
+        make_rules2(piese, pieses, shapes.arrow_shapes, circles.circle_shapes)).join('\n')
 
       return [res, make_p_map(pieses, circles.circle_shapes)] as [string, Map<string, string>]
     })
 
     let m_rules_by_pieses = () => m_rules_and_pos_by_pieses()[0]
     let m_rules_pieses_map = () => m_rules_and_pos_by_pieses()[1]
-
 
     this.m_rules = m_rules_and_pos_by_pieses
   }
@@ -264,6 +263,49 @@ const make_p_map = (pieses: Array<string>, circles: string) => {
   return _p_map
 }
 
+const make_rules2 = (piese: string, pieses: Array<string>, arrows: string, circles: string) => {
+
+  let [base_piese, base_pos] = piese.split('@')
+
+  let _circles = circles === '' ? [] : circles.split(' ').map(_ => _.split('@')[1])
+  let _ps = pieses.map(_ => _.split('@'))
+  let _as: Array<Array<Pos>> = arrows === '' ? [] : arrows.split(' ').map(_ => _.split('@')[1].split(',')) as Array<Array<Pos>>
+
+
+  let _p_map = new Map<string, string>([
+    ..._circles.map((pos, i) => [pos, `f_${i}`] as [string, string]),
+    ..._ps.map(([wn, pos], i) => [pos, `${wn}_${i}`] as [string, string])
+  ])
+
+  let _map_by_depth = [_as.filter(_ => _[0] === base_pos)]
+
+  for (let i = 0; i < 10; i++) {
+    let _pre = _map_by_depth[i]
+    let _ = _pre.flatMap(_ => _as.filter(_a => _a[0] === _[1]))
+    if (_.length === 0) {
+      break
+    }
+    _map_by_depth.push(_)
+  }
+
+  let _only_map_by_depth = _map_by_depth.map((depth, i) =>
+    depth.filter(_ => !_map_by_depth[i+1]?.find(_t => _t[0] === _[1])))
+
+  const track_back = (depth: number, _: Array<Pos>): Array<Pos> => {
+    if (depth === 0) {
+      return _
+    }
+    return track_back(depth - 1, [_map_by_depth[depth-1].find(_t => _t[1] === _[0])![0], ..._])
+  }
+
+  let _full_only_by_depth = _only_map_by_depth
+  .map((depth, i) => depth.map(_ => track_back(i, _)))
+
+
+  let _rules_by_depth = _full_only_by_depth.map(depth => depth.filter(_ => _.every(_ => !!_p_map.get(_))).map(_ => _.map(_ => _p_map.get(_))))
+
+  return _rules_by_depth.filter(_ => _.length > 0).map(_ => _.map(_ => _.join('->')).join(' ')).join(' ')
+}
 
 const make_rules = (piese: string, pieses: Array<string>, arrows: string, circles: string) => {
 
@@ -280,18 +322,13 @@ const make_rules = (piese: string, pieses: Array<string>, arrows: string, circle
   ])
 
   let _first = _as.filter(_ => _[0] === base_pos)
-
   let _second = _first.flatMap(_ => _as.filter(_a => _a[0] === _[1]))
   let _third = _second.flatMap(_ => _as.filter(_a => _a[0] === _[1]))
-
 
   let _only_second = _second.filter(_ => !_third.find(_t => _t[0] === _[1]))
   let _only_first = _first.filter(_ => !_second.find(_t => _t[0] === _[1]))
 
   let _full_only_second = _only_second.map(_ => [_first.find(_f => _f[1] === _[0])![0], ..._])
-
-  let _full_second = _second.map(_ => [_first.find(_f => _f[1] === _[0])![0], ..._])
-  let _full_third = _third.map(_ => [..._full_second.find(_f => _f[2] === _[0])!.slice(0, 2), ..._])
 
   let _first_rules = _only_first.flatMap(([_a, _b]) => {
     let a = _p_map.get(_a),
@@ -315,7 +352,7 @@ const make_rules = (piese: string, pieses: Array<string>, arrows: string, circle
     return []
   })
 
-  let _third_rules = _full_third.flatMap(([_a, _b, _c, _d]) => {
+  let _third_rules = _third.flatMap(([_a, _b, _c, _d]) => {
     let a = _p_map.get(_a),
       b = _p_map.get(_b),
       c = _p_map.get(_c),
@@ -327,10 +364,12 @@ const make_rules = (piese: string, pieses: Array<string>, arrows: string, circle
     return []
   })
 
+
   let res = [
     ..._first_rules.map(_ => _.join('->')), 
     ..._second_rules.map(_ => _.join('->')), 
-    ..._third_rules.map(_ => _.join('->'))].join(' ')
+    ..._third_rules.map(_ => _.join('->'))
+  ].join(' ')
 
 
   return res

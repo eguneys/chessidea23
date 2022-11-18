@@ -6,10 +6,14 @@ import { _Chessideareplay23 } from './idea_replay_ctrl'
 import Chessboardmove from './board_move'
 import { FlatDoc, Path } from 'lchessanalysis'
 
-export default function (props: { shapes: string, on_nodes: (_: FlatDoc) => void, nodes: FlatDoc, path: Path | '' }) {
+export default function (props: { on_path: (_: Path | '') => void, shapes: string, on_nodes: (_: FlatDoc) => void, nodes: FlatDoc, path: Path | '' }) {
 
   let ctrl = new _Chessideareplay23(props.nodes, props.path)
   onScrollHandlers(ctrl)
+
+  createEffect(() => {
+    props.on_path(ctrl.path)
+      })
 
   createEffect(() => {
       batch(() => {

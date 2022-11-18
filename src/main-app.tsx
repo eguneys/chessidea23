@@ -13,8 +13,8 @@ const App = () => {
 
   return (<>
     <div class='idea-wrap'>
-      <Chessidea23 fen={fen} on_fen={_=> {}} on_rules = { _ => {}}/>
-      <Chessideareplay23 on_nodes={_ => console.log(_) } shapes={''} nodes={flat_doc} path=''/>
+      <Chessidea23 fen={fen} on_fen={_=> {}} on_rules = { _ => console.log(_)}/>
+      <Chessideareplay23 on_path={_ => {}} on_nodes={_ => {} } shapes={''} nodes={flat_doc} path=''/>
     </div>
       </>)
 }

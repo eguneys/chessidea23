@@ -25,7 +25,7 @@ export class _Chessideareplay23 {
   }
 
   get allowed_ods() {
-    return this.m_situation().ods
+    return this.m_situation().ods as Array<UCI>
   }
 
   get replay_moves() {
