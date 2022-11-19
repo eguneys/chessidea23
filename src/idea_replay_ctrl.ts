@@ -9,7 +9,7 @@ const replay_convert = (d: FlatDoc) => {
   return rest.map(_ => {
     let [path, node] = _
     let uci = node.uci
-    let comment = ''
+    let comment = node.comment || ''
    return `${path} ${uci} {${comment}}` 
   })
 }
